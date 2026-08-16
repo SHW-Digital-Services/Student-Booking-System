@@ -97,13 +97,12 @@ export async function getAllStudents() {
   }
 }
 
-// Get all tutors - [UPDATED] to fetch subjects
+// Get all tutors
 export async function getAllTutors() {
   try {
-    // We added 'subjects' to the select query here so it's available for booking later
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, full_name, email, subjects') 
+      .select('id, full_name, email, subjects')
       .eq('role', 'tutor')
       .order('full_name', { ascending: true })
     
@@ -112,7 +111,27 @@ export async function getAllTutors() {
       return { data: null, error }
     }
     
-    return { data: data || [], error: null }
+    const tutorIds = (data || []).map((tutor) => tutor.id)
+    if (tutorIds.length === 0) {
+      return { data: [], error: null }
+    }
+
+    const { data: subjects, error: subjectsError } = await supabase
+      .from('tutor_subjects')
+      .select('id, tutor_id, name, price, is_active')
+      .in('tutor_id', tutorIds)
+      .eq('is_active', true)
+      .order('name', { ascending: true })
+
+    if (subjectsError) throw subjectsError
+
+    return {
+      data: (data || []).map((tutor) => ({
+        ...tutor,
+        lesson_subjects: (subjects || []).filter((subject) => subject.tutor_id === tutor.id),
+      })),
+      error: null
+    }
   } catch (error) {
     console.error('Error fetching tutors:', error)
     return { data: null, error }

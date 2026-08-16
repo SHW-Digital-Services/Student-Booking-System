@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../contexts/auth'
 import { getAllStudents, getTutorHourlyRate } from '../../lib/profileAPI'
+import { getTutorSubjects } from '../../lib/tutorSubjectsAPI'
 import { createBooking, getTutorBookings } from '../../lib/bookingAPI'
 import { recordBookingPayment, notifyPaymentUpdate } from '../../lib/paymentsAPI'
 import { supabase } from '../../lib/supabaseClient'
@@ -38,11 +39,13 @@ export default function POSSystem() {
   const [selectedBookingId, setSelectedBookingId] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('card')
   const [hourlyRate, setHourlyRate] = useState(30.0)
+  const [lessonSubjects, setLessonSubjects] = useState([])
   const [amount, setAmount] = useState(30.0)
 
   const [formData, setFormData] = useState({
     studentId: '',
     reason: 'Lesson',
+    lessonSubjectId: '',
     lessonDate: '',
     lessonTime: '09:00',
     email: '',
@@ -74,6 +77,16 @@ export default function POSSystem() {
     }
   }, [user.id])
 
+  const loadSubjects = useCallback(async () => {
+    try {
+      const { data, error } = await getTutorSubjects(user.id, { activeOnly: true })
+      if (error) throw error
+      setLessonSubjects(data || [])
+    } catch (err) {
+      console.error('Failed to load lesson subjects', err)
+    }
+  }, [user.id])
+
   const loadBookings = useCallback(async () => {
     try {
       setBookingsLoading(true)
@@ -91,9 +104,10 @@ export default function POSSystem() {
     if (user) {
       loadStudents()
       loadRate()
+      loadSubjects()
       loadBookings()
     }
-  }, [user, loadStudents, loadRate, loadBookings])
+  }, [user, loadStudents, loadRate, loadSubjects, loadBookings])
 
   const unpaidPastBookings = bookings.filter((booking) => {
     if (!booking) return false
@@ -126,6 +140,7 @@ export default function POSSystem() {
         studentId: '',
         email: '',
         reason: 'Lesson',
+        lessonSubjectId: '',
         lessonDate: '',
         lessonTime: '09:00',
         cardholderName: '',
@@ -140,11 +155,14 @@ export default function POSSystem() {
 
     const student = students.find((s) => s.id === booking.student_id)
     const durationHours = Number(booking.duration_minutes || 60) / 60
-    const defaultAmount = Number((durationHours * Number(hourlyRate || 0)).toFixed(2))
+    const defaultAmount = Number(
+      (Number(booking.lesson_price || hourlyRate || 0) * durationHours).toFixed(2)
+    )
 
     setFormData({
       studentId: booking.student_id,
       reason: 'Lesson payment',
+      lessonSubjectId: booking.lesson_subject_id || '',
       lessonDate: booking.lesson_date || '',
       lessonTime: booking.lesson_time || '09:00',
       email: student ? student.email : '',
@@ -160,6 +178,23 @@ export default function POSSystem() {
   const handleInputChange = (e) => {
     const { id, value } = e.target
     setFormData((prev) => ({ ...prev, [id]: value }))
+  }
+
+  const handleSubjectChange = (e) => {
+    const lessonSubjectId = e.target.value
+    const selectedSubject = lessonSubjects.find((subject) => subject.id === lessonSubjectId)
+
+    setFormData((prev) => ({
+      ...prev,
+      lessonSubjectId,
+      reason: selectedSubject ? `${selectedSubject.name} lesson` : 'Lesson'
+    }))
+
+    if (selectedSubject) {
+      setAmount(Number(selectedSubject.price).toFixed(2))
+    } else {
+      setAmount(Number(hourlyRate).toFixed(2))
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -195,12 +230,17 @@ export default function POSSystem() {
 
         await loadBookings()
       } else {
+        const selectedSubject = lessonSubjects.find((subject) => subject.id === formData.lessonSubjectId)
+
         const { data: booking, error: bookingError } = await createBooking({
           studentId: formData.studentId,
           tutorId: user.id,
           lessonDate: formData.lessonDate,
           lessonTime: formData.lessonTime,
           duration: 60,
+          lessonSubjectId: selectedSubject?.id || null,
+          lessonSubjectName: selectedSubject?.name || null,
+          lessonPrice: paymentAmount,
           createdByRole: 'tutor'
         })
 
@@ -253,6 +293,7 @@ export default function POSSystem() {
       setFormData({
         studentId: '',
         reason: 'Lesson',
+        lessonSubjectId: '',
         lessonDate: '',
         lessonTime: '09:00',
         email: '',
@@ -403,6 +444,18 @@ export default function POSSystem() {
                   />
                 </div>
 
+                {formData.lessonSubjectId && (
+                  <div className="form-group">
+                    <label>Lesson Subject</label>
+                    <input
+                      type="text"
+                      value={bookings.find((item) => item.id === selectedBookingId)?.lesson_subject_name || ''}
+                      readOnly
+                      className="bg-gray"
+                    />
+                  </div>
+                )}
+
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="lessonDate">Lesson Date</label>
@@ -470,6 +523,26 @@ export default function POSSystem() {
                   />
                 </div>
 
+                <div className="form-group">
+                  <label htmlFor="lessonSubjectId">Lesson Subject</label>
+                  {lessonSubjects.length > 0 ? (
+                    <select
+                      id="lessonSubjectId"
+                      value={formData.lessonSubjectId}
+                      onChange={handleSubjectChange}
+                    >
+                      <option value="">Use fallback hourly rate</option>
+                      {lessonSubjects.map((subject) => (
+                        <option key={subject.id} value={subject.id}>
+                          {subject.name} - £{Number(subject.price).toFixed(2)}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input type="text" value="General Tuition" readOnly className="bg-gray" />
+                  )}
+                </div>
+
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="lessonDate">Lesson Date</label>
@@ -509,7 +582,7 @@ export default function POSSystem() {
             </div>
             <div className="form-group">
               <small style={{ color: '#cbd5e1' }}>
-                Default hourly rate: £{Number(hourlyRate).toFixed(2)}. Edit this field for custom tutor charges.
+                Subject prices fill this automatically. Edit this field for custom tutor charges.
               </small>
             </div>
           </div>

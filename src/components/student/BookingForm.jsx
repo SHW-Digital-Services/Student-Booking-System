@@ -8,6 +8,7 @@ import {
 } from "../../lib/bookingAPI";
 import { getTutorAvailability } from "../../lib/availabilityAPI";
 import { getTutorHourlyRate, getProfile } from "../../lib/profileAPI";
+import { getTutorSubjects } from "../../lib/tutorSubjectsAPI";
 import { supabase } from "../../lib/supabaseClient";
 import { useParams } from "react-router-dom";
 
@@ -37,6 +38,8 @@ function BookingForm() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [hourlyRate, setHourlyRate] = useState(30.0);
+  const [lessonSubjects, setLessonSubjects] = useState([]);
+  const [selectedSubjectId, setSelectedSubjectId] = useState("");
   const [tutorName, setTutorName] = useState("");
 
   const minBookingDate = useMemo(() => {
@@ -55,6 +58,12 @@ function BookingForm() {
 
     const { data: rateData } = await getTutorHourlyRate(tutorId);
     if (rateData?.hourly_rate) setHourlyRate(rateData.hourly_rate);
+
+    const { data: subjectData } = await getTutorSubjects(tutorId, { activeOnly: true });
+    setLessonSubjects(subjectData || []);
+    if (subjectData?.length === 1) {
+      setSelectedSubjectId(subjectData[0].id);
+    }
   }, [tutorId]);
 
   const loadAvailability = useCallback(async () => {
@@ -149,6 +158,12 @@ function BookingForm() {
     }
   }, [availableTimes, selectedTime]);
 
+  const selectedSubject = useMemo(() => {
+    return lessonSubjects.find((subject) => subject.id === selectedSubjectId) || null;
+  }, [lessonSubjects, selectedSubjectId]);
+
+  const lessonPrice = selectedSubject ? Number(selectedSubject.price) : Number(hourlyRate);
+
   const handlePay = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -160,12 +175,19 @@ function BookingForm() {
         throw new Error(leadTimeCheck.message);
       }
 
+      if (lessonSubjects.length > 0 && !selectedSubject) {
+        throw new Error("Please choose a lesson subject.");
+      }
+
       const { data: booking, error: bookingError } = await createBooking({
         studentId: user.id,
         tutorId: tutorId,
         lessonDate: selectedDate,
         lessonTime: selectedTime,
         duration: 60,
+        lessonSubjectId: selectedSubject?.id || null,
+        lessonSubjectName: selectedSubject?.name || null,
+        lessonPrice,
         createdByRole: "student",
       });
 
@@ -175,7 +197,7 @@ function BookingForm() {
         "stripe-init",
         {
           body: {
-            amount: hourlyRate,
+            amount: lessonPrice,
             bookingId: booking.id,
             studentId: user.id,
             email: user.email,
@@ -202,7 +224,7 @@ function BookingForm() {
     <div className="booking-form-container">
       <h2>Book a Lesson with {tutorName}</h2>
       <p className="tutor-rate">
-        Hourly Rate: GBP {Number(hourlyRate).toFixed(2)}
+        Lesson price: GBP {Number(lessonPrice || 0).toFixed(2)}
       </p>
       <p className="booking-notice">
         Student bookings must be made at least 24 hours in advance. Earliest allowed start:{" "}
@@ -210,6 +232,27 @@ function BookingForm() {
       </p>
       {error && <div className="error">{error}</div>}
       <form onSubmit={handlePay} className="booking-form">
+        <div className="form-group">
+          <label htmlFor="subject">Select Subject:</label>
+          {lessonSubjects.length > 0 ? (
+            <select
+              id="subject"
+              value={selectedSubjectId}
+              onChange={(e) => setSelectedSubjectId(e.target.value)}
+              required
+              className="form-input"
+            >
+              <option value="">Choose a subject...</option>
+              {lessonSubjects.map((subject) => (
+                <option key={subject.id} value={subject.id}>
+                  {subject.name} - GBP {Number(subject.price).toFixed(2)}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <div className="subject-fallback">General Tuition - GBP {Number(hourlyRate).toFixed(2)}</div>
+          )}
+        </div>
         <div className="form-group">
           <label htmlFor="date">Select Date:</label>
           <input
@@ -247,7 +290,7 @@ function BookingForm() {
         </div>
         <button
           type="submit"
-          disabled={loading || !selectedTime || !selectedDate}
+          disabled={loading || !selectedTime || !selectedDate || (lessonSubjects.length > 0 && !selectedSubject)}
           className="btn-primary"
         >
           {loading ? "Redirecting..." : "Continue to Stripe checkout"}
@@ -295,6 +338,13 @@ function BookingForm() {
         .tutor-rate {
           color: #ffffff;
           margin-bottom: 1.5rem;
+        }
+        .subject-fallback {
+          padding: 0.75rem;
+          border: 2px solid #3a3a3a;
+          border-radius: 6px;
+          background-color: #111827;
+          color: #ffffff;
         }
         .booking-notice {
           color: #cbd5e1;

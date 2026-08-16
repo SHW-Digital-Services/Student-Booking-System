@@ -30,6 +30,19 @@ export default function TutorSelection({ previewMode = false }) {
     )
   }
 
+  const formatSubjectLines = (tutor) => {
+    if (tutor.lesson_subjects?.length > 0) {
+      return tutor.lesson_subjects.map((subject) => (
+        <div key={subject.id} style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
+          <span>{subject.name}</span>
+          <strong>£{Number(subject.price).toFixed(2)}</strong>
+        </div>
+      ))
+    }
+
+    return <span>{tutor.subjects ? tutor.subjects : "General Tuition"}</span>
+  }
+
   return (
     <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
       <h1 style={{ marginBottom: '2rem', color: '#fff' }}>Select a Tutor</h1>
@@ -87,9 +100,9 @@ export default function TutorSelection({ previewMode = false }) {
                 <BookOpen size={14} /> 
                 <span>SUBJECTS</span>
               </div>
-              <p style={{ margin: 0, color: '#cbd5e1', fontSize: '0.95rem' }}>
-                {tutor.subjects ? tutor.subjects : "General Tuition"}
-              </p>
+              <div style={{ margin: 0, color: '#cbd5e1', fontSize: '0.95rem', display: 'grid', gap: '0.35rem' }}>
+                {formatSubjectLines(tutor)}
+              </div>
             </div>
 
             <button 

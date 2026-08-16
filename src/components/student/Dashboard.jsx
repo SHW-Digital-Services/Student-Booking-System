@@ -119,6 +119,16 @@ export default function StudentDashboard() {
     setShowTutorSelection(false)
   }
 
+  const formatTutorSubjects = (tutor) => {
+    if (tutor.lesson_subjects?.length > 0) {
+      return tutor.lesson_subjects
+        .map((subject) => `${subject.name} (£${Number(subject.price).toFixed(2)})`)
+        .join(', ')
+    }
+
+    return tutor.subjects || 'General Tuition'
+  }
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
@@ -199,6 +209,8 @@ export default function StudentDashboard() {
                         <strong>{tutor.full_name}</strong>
                         <br />
                         <small>{tutor.email}</small>
+                        <br />
+                        <small>{formatTutorSubjects(tutor)}</small>
                       </button>
                     ))}
                   </div>
@@ -226,6 +238,7 @@ export default function StudentDashboard() {
                     <tr>
                       <th>Date</th>
                       <th>Time</th>
+                      <th>Subject</th>
                       <th>Tutor</th>
                       <th>Status</th>
                       <th>Payment</th>
@@ -236,6 +249,12 @@ export default function StudentDashboard() {
                       <tr key={booking.id}>
                         <td>{formatBookingDate(booking)}</td>
                         <td>{formatBookingTime(booking)}</td>
+                        <td>
+                          {booking.lesson_subject_name || 'General Tuition'}
+                          {booking.lesson_price && (
+                            <span> (£{Number(booking.lesson_price).toFixed(2)})</span>
+                          )}
+                        </td>
                         <td>{booking.tutor?.full_name || 'Unknown Tutor'}</td>
                         <td>
                           <span className={`status-badge ${booking.status}`}>

@@ -37,7 +37,10 @@ export default function PaymentPage() {
 
         const hourlyRate = Number(booking.tutor?.hourly_rate || 0)
         const durationMinutes = Number(booking.duration_minutes || 60)
-        const bookingAmount = Number(((hourlyRate * durationMinutes) / 60).toFixed(2))
+        const savedLessonPrice = Number(booking.lesson_price || 0)
+        const bookingAmount = savedLessonPrice > 0
+          ? savedLessonPrice
+          : Number(((hourlyRate * durationMinutes) / 60).toFixed(2))
 
         if (!bookingAmount || bookingAmount <= 0) {
           throw new Error('Unable to calculate the booking amount')

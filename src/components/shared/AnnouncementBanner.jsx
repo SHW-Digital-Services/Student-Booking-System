@@ -1,42 +1,39 @@
 import { useEffect, useState } from 'react'
 import { Megaphone } from 'lucide-react'
-import { getSystemSetting } from '../../lib/settingsAPI'
+import { getAnnouncements } from '../../lib/announcementsAPI'
 import { supabase } from '../../lib/supabaseClient'
 import './AnnouncementBanner.css'
 
 export default function AnnouncementBanner() {
-  const [announcement, setAnnouncement] = useState('')
+  const [announcements, setAnnouncements] = useState([])
 
   useEffect(() => {
     let mounted = true
 
     const loadAnnouncement = async () => {
-      const { data, error } = await getSystemSetting('announcement_banner')
-      if (!error && mounted) setAnnouncement(data?.value?.trim() || '')
+      const { data, error } = await getAnnouncements({ activeOnly: true })
+      if (!error && mounted) setAnnouncements(data || [])
     }
 
     loadAnnouncement()
 
-    const handleLocalUpdate = (event) => setAnnouncement(event.detail || '')
-    window.addEventListener('announcement-banner-updated', handleLocalUpdate)
-
     const channel = supabase
-      .channel('announcement-banner')
+      .channel('announcements')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'system_settings', filter: 'key=eq.announcement_banner' },
-        (payload) => setAnnouncement(payload.new?.value?.trim() || '')
+        { event: '*', schema: 'public', table: 'announcements' },
+        () => loadAnnouncement()
       )
       .subscribe()
 
     return () => {
       mounted = false
-      window.removeEventListener('announcement-banner-updated', handleLocalUpdate)
       supabase.removeChannel(channel)
     }
   }, [])
 
-  if (!announcement) return null
+  if (!announcements.length) return null
+  const announcement = announcements.map(({ message }) => message.trim()).join('   •   ')
 
   return (
     <section className="announcement-banner" aria-label="Tutor announcement">

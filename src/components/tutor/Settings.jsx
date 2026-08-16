@@ -1,16 +1,23 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../contexts/auth'
 import { getTutorHourlyRate, updateTutorHourlyRate } from '../../lib/profileAPI'
-import { getSystemSetting, updateSystemSetting, upsertSystemSetting } from '../../lib/settingsAPI'
-import { Save, AlertTriangle, Power } from 'lucide-react'
+import { getSystemSetting, updateSystemSetting } from '../../lib/settingsAPI'
+import { getAnnouncements, createAnnouncement } from '../../lib/announcementsAPI'
+import { deleteTutorSubject, getTutorSubjects, saveTutorSubject } from '../../lib/tutorSubjectsAPI'
+import { Save, AlertTriangle, Power, Plus, Trash2 } from 'lucide-react'
 
 export default function Settings() {
   const { user } = useAuth()
   
   // States
   const [rate, setRate] = useState(30.00)
+  const [lessonSubjects, setLessonSubjects] = useState([])
+  const [subjectForm, setSubjectForm] = useState({ name: '', price: '' })
   const [maintenanceMode, setMaintenanceMode] = useState(false)
+  const [announcements, setAnnouncements] = useState([])
   const [announcement, setAnnouncement] = useState('')
+  const [startsAt, setStartsAt] = useState('')
+  const [endsAt, setEndsAt] = useState('')
   
   // UI States
   const [loading, setLoading] = useState(false)
@@ -23,6 +30,9 @@ export default function Settings() {
     const { data: rateData } = await getTutorHourlyRate(user.id)
     if (rateData?.hourly_rate) setRate(rateData.hourly_rate)
 
+    const { data: subjectData, error: subjectError } = await getTutorSubjects(user.id)
+    if (!subjectError) setLessonSubjects(subjectData || [])
+
     // Load Maintenance Mode
     try {
       const { data: settingData } = await getSystemSetting('maintenance_mode')
@@ -31,12 +41,8 @@ export default function Settings() {
       console.error("Could not load maintenance setting:", err)
     }
 
-    try {
-      const { data: announcementData } = await getSystemSetting('announcement_banner')
-      if (announcementData) setAnnouncement(announcementData.value || '')
-    } catch (err) {
-      console.error('Could not load announcement:', err)
-    }
+    const { data: announcementData, error: announcementError } = await getAnnouncements()
+    if (!announcementError) setAnnouncements(announcementData || [])
   }, [user?.id])
 
   useEffect(() => {
@@ -57,17 +63,88 @@ export default function Settings() {
       const { error: settingError } = await updateSystemSetting('maintenance_mode', maintenanceMode)
       if (settingError) throw settingError
 
-      const { error: announcementError } = await upsertSystemSetting('announcement_banner', announcement.trim())
-      if (announcementError) throw announcementError
-
-      window.dispatchEvent(new CustomEvent('announcement-banner-updated', { detail: announcement.trim() }))
-
       setMsg({ type: 'success', text: 'All settings updated successfully!' })
     } catch (err) {
       setMsg({ type: 'error', text: err.message })
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSubjectSave = async (event) => {
+    event.preventDefault()
+    setLoading(true)
+    setMsg({ type: '', text: '' })
+
+    const { error } = await saveTutorSubject(user.id, subjectForm)
+    if (error) {
+      setMsg({ type: 'error', text: error.message })
+    } else {
+      setSubjectForm({ name: '', price: '' })
+      setMsg({ type: 'success', text: 'Lesson subject saved.' })
+      await loadSettings()
+    }
+
+    setLoading(false)
+  }
+
+  const handleSubjectToggle = async (subject) => {
+    setLoading(true)
+    setMsg({ type: '', text: '' })
+
+    const { error } = await saveTutorSubject(user.id, {
+      ...subject,
+      is_active: !subject.is_active,
+    })
+
+    if (error) {
+      setMsg({ type: 'error', text: error.message })
+    } else {
+      await loadSettings()
+    }
+
+    setLoading(false)
+  }
+
+  const handleSubjectDelete = async (subjectId) => {
+    if (!window.confirm('Delete this lesson subject? Existing bookings keep their saved subject and price.')) return
+    setLoading(true)
+    setMsg({ type: '', text: '' })
+
+    const { error } = await deleteTutorSubject(user.id, subjectId)
+    if (error) {
+      setMsg({ type: 'error', text: error.message })
+    } else {
+      setMsg({ type: 'success', text: 'Lesson subject deleted.' })
+      await loadSettings()
+    }
+
+    setLoading(false)
+  }
+
+  const handleAnnouncementSave = async (event) => {
+    event.preventDefault()
+    if (!announcement.trim() || !startsAt) {
+      setMsg({ type: 'error', text: 'Enter an announcement and start date.' })
+      return
+    }
+    if (endsAt && new Date(endsAt) < new Date(startsAt)) {
+      setMsg({ type: 'error', text: 'The end date must be after the start date.' })
+      return
+    }
+    setLoading(true)
+    const { error } = await createAnnouncement({ message: announcement, startsAt, endsAt, createdBy: user.id })
+    if (error) {
+      setMsg({ type: 'error', text: error.message })
+    } else {
+      setAnnouncement('')
+      setStartsAt('')
+      setEndsAt('')
+      setMsg({ type: 'success', text: 'Announcement saved.' })
+      await loadSettings()
+      window.dispatchEvent(new Event('announcements-updated'))
+    }
+    setLoading(false)
   }
 
   return (
@@ -93,9 +170,9 @@ export default function Settings() {
         
         {/* --- SECTION 1: Hourly Rate --- */}
         <div style={{ paddingBottom: '1.5rem', borderBottom: '1px solid #333' }}>
-          <h3 style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '1rem' }}>Pricing</h3>
+          <h3 style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '1rem' }}>Default pricing</h3>
           <label style={{ display: 'block', color: '#cbd5e1', marginBottom: '0.5rem', fontWeight: '500' }}>
-            Hourly Rate (£)
+            Fallback hourly rate (£)
           </label>
           <input
             type="number"
@@ -106,6 +183,57 @@ export default function Settings() {
             required
             style={{ width: '100%', padding: '0.75rem', fontSize: '1.1rem', backgroundColor: '#000000', color: '#ffffff', border: '1px solid #3a3a3a', borderRadius: '6px' }}
           />
+          <p style={{ margin: '0.75rem 0 0', color: '#94a3b8', fontSize: '0.85rem' }}>
+            Used only when a booking has no selected lesson subject.
+          </p>
+        </div>
+
+        <div style={{ paddingBottom: '1.5rem', borderBottom: '1px solid #333' }}>
+          <h3 style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '1rem' }}>Lesson subjects and prices</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 140px auto', gap: '0.75rem', alignItems: 'end' }}>
+            <label style={{ color: '#cbd5e1', fontWeight: '500' }}>
+              Subject
+              <input
+                type="text"
+                value={subjectForm.name}
+                onChange={(event) => setSubjectForm((current) => ({ ...current, name: event.target.value }))}
+                placeholder="GCSE Maths"
+                style={{ width: '100%', boxSizing: 'border-box', marginTop: '0.5rem', padding: '0.75rem', backgroundColor: '#000000', color: '#ffffff', border: '1px solid #3a3a3a', borderRadius: '6px' }}
+              />
+            </label>
+            <label style={{ color: '#cbd5e1', fontWeight: '500' }}>
+              Price (£)
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={subjectForm.price}
+                onChange={(event) => setSubjectForm((current) => ({ ...current, price: event.target.value }))}
+                placeholder="35.00"
+                style={{ width: '100%', boxSizing: 'border-box', marginTop: '0.5rem', padding: '0.75rem', backgroundColor: '#000000', color: '#ffffff', border: '1px solid #3a3a3a', borderRadius: '6px' }}
+              />
+            </label>
+            <button type="button" onClick={handleSubjectSave} disabled={loading} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.75rem 1rem', color: '#fff', backgroundColor: '#2563eb', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
+              <Plus size={16} /> Add
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gap: '0.5rem', marginTop: '1rem' }}>
+            {lessonSubjects.length === 0 && <span style={{ color: '#94a3b8' }}>No lesson subjects added yet.</span>}
+            {lessonSubjects.map((subject) => (
+              <div key={subject.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto auto auto', gap: '0.75rem', alignItems: 'center', padding: '0.75rem', backgroundColor: '#000', border: '1px solid #3a3a3a', borderRadius: '6px' }}>
+                <strong style={{ color: '#fff' }}>{subject.name}</strong>
+                <span style={{ color: '#cbd5e1' }}>£{Number(subject.price).toFixed(2)}</span>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: '#cbd5e1', fontSize: '0.9rem' }}>
+                  <input type="checkbox" checked={subject.is_active} onChange={() => handleSubjectToggle(subject)} />
+                  Active
+                </label>
+                <button type="button" onClick={() => handleSubjectDelete(subject.id)} title="Delete subject" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.45rem', color: '#fca5a5', backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.35)', borderRadius: '6px', cursor: 'pointer' }}>
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* --- SECTION 2: Maintenance Mode --- */}
@@ -163,21 +291,23 @@ export default function Settings() {
 
         <div style={{ paddingBottom: '1.5rem', borderBottom: '1px solid #333' }}>
           <h3 style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '1rem' }}>Student announcement</h3>
-          <label style={{ display: 'block', color: '#cbd5e1', marginBottom: '0.5rem', fontWeight: '500' }} htmlFor="announcement-banner">
-            Banner message
-          </label>
-          <textarea
-            id="announcement-banner"
-            value={announcement}
-            onChange={(event) => setAnnouncement(event.target.value)}
-            maxLength="500"
-            rows="3"
-            placeholder="Write an announcement for all dashboard users..."
-            style={{ width: '100%', boxSizing: 'border-box', padding: '0.75rem', fontSize: '1rem', backgroundColor: '#000000', color: '#ffffff', border: '1px solid #3a3a3a', borderRadius: '6px', resize: 'vertical' }}
-          />
-          <p style={{ margin: '0.5rem 0 0', color: '#94a3b8', fontSize: '0.85rem' }}>
-            This scrolls across the top of every student and tutor dashboard tab. Leave it empty and save to remove it.
-          </p>
+          <div style={{ display: 'grid', gap: '0.75rem' }}>
+            <textarea id="announcement-banner" value={announcement} onChange={(event) => setAnnouncement(event.target.value)} maxLength="500" rows="3" placeholder="Write an announcement for all dashboard users..." style={{ width: '100%', boxSizing: 'border-box', padding: '0.75rem', fontSize: '1rem', backgroundColor: '#000000', color: '#ffffff', border: '1px solid #3a3a3a', borderRadius: '6px', resize: 'vertical' }} />
+            <label style={{ color: '#cbd5e1' }}>Starts <input type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} required style={{ marginLeft: '0.5rem', padding: '0.5rem' }} /></label>
+            <label style={{ color: '#cbd5e1' }}>Ends <input type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} style={{ marginLeft: '0.8rem', padding: '0.5rem' }} /></label>
+            <button type="button" onClick={handleAnnouncementSave} disabled={loading} style={{ padding: '0.7rem', color: '#fff', backgroundColor: '#2563eb', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Save Announcement</button>
+          </div>
+          <p style={{ margin: '0.75rem 0 0', color: '#94a3b8', fontSize: '0.85rem' }}>Active announcements scroll one after another. Leave the end date empty for an announcement with no expiry.</p>
+          <h4 style={{ color: '#fff', margin: '1.5rem 0 0.75rem' }}>Previous announcements</h4>
+          <div style={{ display: 'grid', gap: '0.5rem' }}>
+            {announcements.length === 0 && <span style={{ color: '#94a3b8' }}>No announcements saved yet.</span>}
+            {announcements.map((item) => (
+              <div key={item.id} style={{ padding: '0.75rem', backgroundColor: '#000', border: '1px solid #3a3a3a', borderRadius: '6px' }}>
+                <div style={{ color: '#fff' }}>{item.message}</div>
+                <small style={{ color: '#94a3b8' }}>{new Date(item.starts_at).toLocaleString()} – {item.ends_at ? new Date(item.ends_at).toLocaleString() : 'No expiry'}</small>
+              </div>
+            ))}
+          </div>
         </div>
 
         <button

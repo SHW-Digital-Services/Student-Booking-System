@@ -17,6 +17,13 @@ function isArchivedBooking(booking, today) {
   return lessonDate < today
 }
 
+function getBookingPaymentAmount(booking) {
+  const savedPrice = Number(booking?.lesson_price || 0)
+  if (savedPrice > 0) return savedPrice
+
+  return booking?.duration_minutes ? Number(booking.duration_minutes) / 60 : 1
+}
+
 export default function BookingManagement({ tutorId }) {
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
@@ -122,7 +129,7 @@ export default function BookingManagement({ tutorId }) {
     if (!window.confirm('Mark this lesson as paid by cash?')) return
 
     try {
-      const defaultAmount = booking.duration_minutes ? booking.duration_minutes / 60 : 1
+      const defaultAmount = getBookingPaymentAmount(booking)
       const rawAmount = window.prompt(
         'Enter the cash amount received for this lesson (GBP):',
         defaultAmount.toFixed(2)
@@ -148,7 +155,7 @@ export default function BookingManagement({ tutorId }) {
     try {
       const rawAmount = window.prompt(
         'Enter the payment amount in GBP:',
-        '0.00'
+        getBookingPaymentAmount(booking).toFixed(2)
       )
       const amount = rawAmount ? parseFloat(rawAmount.replace(/[^0-9.]/g, '')) : NaN
       if (Number.isNaN(amount) || amount <= 0) {
@@ -238,6 +245,16 @@ export default function BookingManagement({ tutorId }) {
           <p>
             <strong>Duration:</strong> {booking.duration_minutes} minutes
           </p>
+          {booking.lesson_subject_name && (
+            <p>
+              <strong>Subject:</strong> {booking.lesson_subject_name}
+            </p>
+          )}
+          {booking.lesson_price && (
+            <p>
+              <strong>Price:</strong> £{Number(booking.lesson_price).toFixed(2)}
+            </p>
+          )}
           <p>
             <strong>Payment:</strong> {booking.payment_status}
           </p>
@@ -334,6 +351,16 @@ export default function BookingManagement({ tutorId }) {
             <p>
               <strong>Status:</strong> {formatStatusLabel(selectedBooking.status)}
             </p>
+            {selectedBooking.lesson_subject_name && (
+              <p>
+                <strong>Subject:</strong> {selectedBooking.lesson_subject_name}
+              </p>
+            )}
+            {selectedBooking.lesson_price && (
+              <p>
+                <strong>Price:</strong> £{Number(selectedBooking.lesson_price).toFixed(2)}
+              </p>
+            )}
             {selectedBooking.video_room_token && (
               <p>
                 <strong>Room Link:</strong>{' '}

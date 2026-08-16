@@ -106,6 +106,12 @@ function isMissingVideoRoomColumnError(error) {
   )
 }
 
+function normalizeBookingPrice(value) {
+  const price = Number(value)
+  if (!Number.isFinite(price) || price < 0) return null
+  return Number(price.toFixed(2))
+}
+
 export async function ensureBookingVideoRoom(bookingId) {
   try {
     if (!bookingId) throw new Error('Booking ID is required')
@@ -173,6 +179,9 @@ export async function createBooking(bookingData) {
         lesson_date: bookingData.lessonDate,
         lesson_time: bookingData.lessonTime,
         duration_minutes: bookingData.duration || 60,
+        lesson_subject_id: bookingData.lessonSubjectId || null,
+        lesson_subject_name: bookingData.lessonSubjectName || null,
+        lesson_price: normalizeBookingPrice(bookingData.lessonPrice),
         status: 'pending',
         payment_status: 'unpaid'
       })
@@ -242,7 +251,7 @@ export async function getStudentBookings(studentId) {
       const tutorIds = [...new Set(bookings.map(b => b.tutor_id))]
       const { data: tutors, error: tutorsError } = await supabase
         .from('profiles')
-        .select('id, full_name, email')
+      .select('id, full_name, email')
         .in('id', tutorIds)
       
       if (tutorsError) throw tutorsError
