@@ -497,7 +497,7 @@
 .input-wrapper select:focus,
 .input-wrapper textarea:focus {
   outline: none;
-  border-color: #45d5e8;
+  border-color: #b4ff39;
   box-shadow: 0 0 0 3px rgba(69, 213, 232, 0.24);
   background: #1e293b;
 }
@@ -513,7 +513,7 @@
 }
 
 .file-drop-zone:hover {
-  border-color: #45d5e8;
+  border-color: #b4ff39;
   background: rgba(69, 213, 232, 0.08);
 }
 
@@ -539,7 +539,7 @@
 }
 
 .upload-icon-large {
-  color: #45d5e8;
+  color: #b4ff39;
   margin-bottom: 0.75rem;
   opacity: 0.8;
 }
@@ -569,7 +569,7 @@
 }
 
 .file-type-icon {
-  color: #45d5e8;
+  color: #b4ff39;
 }
 
 .file-details .name {
@@ -608,7 +608,7 @@
 
 /* Submit Button */
 .btn-submit-homework {
-  background: linear-gradient(135deg, #45d5e8 0%, #9e65ec 100%);
+  background: linear-gradient(135deg, #b4ff39 0%, #a020f0 100%);
   color: white;
   border: none;
   padding: 0.875rem;

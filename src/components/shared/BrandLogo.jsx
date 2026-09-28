@@ -17,8 +17,8 @@ export default function BrandLogo({
           height: `${size}px`,
           borderRadius: '50%',
           overflow: 'hidden',
-          border: '1px solid rgba(124, 216, 232, 0.35)',
-          background: 'linear-gradient(145deg, rgba(76, 224, 233, 0.2), rgba(149, 91, 233, 0.22))',
+          border: '1px solid rgba(180, 255, 57, 0.35)',
+          background: 'linear-gradient(145deg, rgba(180, 255, 57, 0.2), rgba(149, 91, 233, 0.22))',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
@@ -38,7 +38,7 @@ export default function BrandLogo({
             position: 'absolute',
             fontSize: `${Math.max(14, Math.round(size * 0.38))}px`,
             fontWeight: 800,
-            color: '#4ce0e9',
+            color: '#b4ff39',
             letterSpacing: '0.02em'
           }}
         >
@@ -52,7 +52,7 @@ export default function BrandLogo({
             fontWeight: 800,
             letterSpacing: '0.03em',
             lineHeight: 1,
-            background: 'linear-gradient(90deg, #4ce0e9 0%, #8a72f8 58%, #b45bdd 100%)',
+            background: 'linear-gradient(90deg, #b4ff39 0%, #c080ff 58%, #b4ff39 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',

@@ -1,6 +1,15 @@
 Production setup
 ================
 
+Tutor email
+-----------
+- The tutor Send Email action calls the Supabase `system-mail` Edge Function using the signed-in user's session.
+- Deploy `supabase/functions/system-mail` to the same Supabase project used by the frontend. Its deployment configuration is in `supabase/config.toml`.
+- Apply the `20260612150000_system_mail.sql` migration if it is not already applied.
+- Set `BREVO_API_KEY` and `BREVO_FROM` (a verified sender email address) in Supabase Edge Function secrets. These are server secrets, not Vercel frontend variables.
+- The function records messages in `system_mail` and sends them through Brevo. The UI reports success only when the external email is sent.
+- No Vercel `/api/email/send-student` route is required.
+
 
 Required environment variables
 - `VITE_SUPABASE_URL` - public Supabase URL for the frontend

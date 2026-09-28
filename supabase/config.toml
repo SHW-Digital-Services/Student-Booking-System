@@ -424,3 +424,10 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/complete-temp-password-reset/deno.json"
 entrypoint = "./functions/complete-temp-password-reset/index.ts"
+
+[functions.system-mail]
+enabled = true
+# The function validates the bearer token through Supabase Auth itself.
+verify_jwt = false
+import_map = "./functions/system-mail/deno.json"
+entrypoint = "./functions/system-mail/index.ts"

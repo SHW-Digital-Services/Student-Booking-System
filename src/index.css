@@ -5,7 +5,7 @@
   --text-primary: #fffaff;
   --text-secondary: #eee4ff;
   --text-muted: #cbbde0;
-  --purple-primary: #8727F5;
+  --purple-primary: #a020f0;
   --purple-dark: #6d18d2;
   --purple-light: #b777ff;
   --purple-lighter: #e4caff;
@@ -28,7 +28,7 @@ html, body, #root {
 body {
   margin: 0;
   line-height: 1.6;
-  background-image: radial-gradient(circle at 12% 15%, rgba(135, 39, 245, .32), transparent 25%), radial-gradient(circle at 88% 5%, rgba(0, 220, 255, .18), transparent 22%), radial-gradient(circle at 55% 92%, rgba(255, 82, 193, .2), transparent 27%);
+  background-image: radial-gradient(circle at 12% 15%, rgba(160, 32, 240, .32), transparent 25%), radial-gradient(circle at 88% 5%, rgba(180, 255, 57, .18), transparent 22%), radial-gradient(circle at 55% 92%, rgba(160, 32, 240, .2), transparent 27%);
   background-attachment: fixed;
 }
 

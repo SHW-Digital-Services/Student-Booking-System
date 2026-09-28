@@ -4,8 +4,8 @@
 :root {
   --bg-dark: #0f172a;       /* Deep blue/black background */
   --bg-card: #1e293b;       /* Lighter blue/gray for cards */
-  --primary: #45d5e8;       /* Brand Cyan */
-  --primary-hover: #9e65ec; /* Brand Violet */
+  --primary: #b4ff39;       /* Neon green */
+  --primary-hover: #a020f0; /* Neon purple */
   --text-main: #f8fafc;     /* White/Off-white */
   --text-muted: #94a3b8;    /* Gray text */
   --border-color: #334155;

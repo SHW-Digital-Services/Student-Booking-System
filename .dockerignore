@@ -1,0 +1,21 @@
+# Exclude unnecessary files from Docker build context
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+.env.local
+.env.*.local
+dist
+build
+.DS_Store
+.vscode
+.agents
+tests
+playwright.config.js
+*.md
+KEY* 
+jaasauth.key
+jaasauth.key.pub
+supabase
+migrations

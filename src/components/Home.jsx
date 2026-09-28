@@ -17,7 +17,7 @@ export default function Home() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#000000',
+      backgroundColor: 'var(--bg-primary)',
       color: '#ffffff',
       display: 'flex',
       flexDirection: 'column'
@@ -46,7 +46,7 @@ export default function Home() {
               transition: 'all 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.target.style.borderColor = '#4ce0e9'
+              e.target.style.borderColor = '#b4ff39'
               e.target.style.color = '#ffffff'
             }}
             onMouseLeave={(e) => {
@@ -60,7 +60,7 @@ export default function Home() {
             onClick={() => navigate('/register')}
             style={{
               padding: '0.75rem 1.5rem',
-              background: 'linear-gradient(135deg, #45d5e8 0%, #9e65ec 100%)',
+              background: 'linear-gradient(135deg, #8618d6 0%, #a020f0 100%)',
               color: '#ffffff',
               border: 'none',
               borderRadius: '8px',
@@ -113,7 +113,7 @@ export default function Home() {
             onClick={() => navigate('/register')}
             style={{
               padding: '1.25rem 3rem',
-              background: 'linear-gradient(135deg, #45d5e8 0%, #9e65ec 100%)',
+              background: 'linear-gradient(135deg, #8618d6 0%, #a020f0 100%)',
               color: '#ffffff',
               border: 'none',
               borderRadius: '12px',
@@ -121,7 +121,7 @@ export default function Home() {
               fontWeight: '600',
               cursor: 'pointer',
               transition: 'all 0.2s',
-              boxShadow: '0 4px 20px rgba(76, 224, 233, 0.35)'
+              boxShadow: '0 4px 20px rgba(180, 255, 57, 0.35)'
             }}
             onMouseEnter={(e) => {
               e.target.style.filter = 'brightness(1.06)'
@@ -154,7 +154,7 @@ export default function Home() {
               gap: '0.5rem'
             }}
             onMouseEnter={(e) => {
-              e.target.style.borderColor = '#4ce0e9'
+              e.target.style.borderColor = '#b4ff39'
               e.target.style.color = '#ffffff'
               e.target.style.backgroundColor = '#2a2a2a'
             }}
@@ -185,7 +185,7 @@ export default function Home() {
             textAlign: 'left',
             transition: 'all 0.2s'
           }}
-          onMouseEnter={(e) => e.currentTarget.style.borderColor = '#4ce0e9'}
+          onMouseEnter={(e) => e.currentTarget.style.borderColor = '#b4ff39'}
           onMouseLeave={(e) => e.currentTarget.style.borderColor = '#3a3a3a'}
           >
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎓</div>
@@ -201,7 +201,7 @@ export default function Home() {
             textAlign: 'left',
             transition: 'all 0.2s'
           }}
-          onMouseEnter={(e) => e.currentTarget.style.borderColor = '#4ce0e9'}
+          onMouseEnter={(e) => e.currentTarget.style.borderColor = '#b4ff39'}
           onMouseLeave={(e) => e.currentTarget.style.borderColor = '#3a3a3a'}
           >
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📅</div>
@@ -217,7 +217,7 @@ export default function Home() {
             textAlign: 'left',
             transition: 'all 0.2s'
           }}
-          onMouseEnter={(e) => e.currentTarget.style.borderColor = '#4ce0e9'}
+          onMouseEnter={(e) => e.currentTarget.style.borderColor = '#b4ff39'}
           onMouseLeave={(e) => e.currentTarget.style.borderColor = '#3a3a3a'}
           >
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💳</div>
@@ -258,7 +258,7 @@ export default function Home() {
             gap: '0.5rem'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = '#4ce0e9'
+            e.currentTarget.style.borderColor = '#b4ff39'
             e.currentTarget.style.color = '#ffffff'
             e.currentTarget.style.backgroundColor = '#3a3a3a'
           }}
