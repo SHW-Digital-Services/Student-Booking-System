@@ -33,3 +33,9 @@ test-results/
 dist/
 .env.local
 .DS_Store
+
+# Private keys (never commit)
+*.pk
+*.key
+*.key.pub
+*.pem
