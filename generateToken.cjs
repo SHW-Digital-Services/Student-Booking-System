@@ -12,7 +12,7 @@ const appId = "69146b29470d4af1b777f9276cfe85eb";
 const kid = "vpaas-magic-cookie-69146b29470d4af1b777f9276cfe85eb/15a968"; 
 
 // 3. Match this filename to your downloaded .pk file exactly
-const privateKeyPath = 'Key 24_02_2026, 17_45_23.pk'; 
+const privateKeyPath = process.env.JAAS_PRIVATE_KEY_PATH || 'Key 24_02_2026, 17_45_23.pk'; // keep the key file outside git
 
 const htmlFilePath = './index.html'; 
 
