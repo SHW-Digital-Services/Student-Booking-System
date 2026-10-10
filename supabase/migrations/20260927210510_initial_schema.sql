@@ -46,8 +46,73 @@ $$;
 
 ALTER FUNCTION "public"."verify_video_room_access"("p_room_token" "text", "p_passcode" "text") OWNER TO "postgres";
 
-SET default_tablespace = '';
-SET default_table_access_method = "heap";
+CREATE OR REPLACE FUNCTION "public"."enforce_student_booking_minimum_notice"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+declare
+  booking_start timestamptz;
+begin
+  if tg_op = 'UPDATE'
+     and new.lesson_date = old.lesson_date
+     and new.lesson_time = old.lesson_time then
+    return new;
+  end if;
+
+  if auth.uid() is null then
+    return new;
+  end if;
+
+  if new.tutor_id = auth.uid() then
+    return new;
+  end if;
+
+  if new.student_id = auth.uid() then
+    booking_start := (new.lesson_date::timestamp + new.lesson_time);
+
+    if booking_start < (now() + interval '24 hours') then
+      raise exception using
+        errcode = '23514',
+        message = 'Students must book at least 24 hours in advance.';
+    end if;
+  end if;
+
+  return new;
+end;
+$$;
+
+ALTER FUNCTION "public"."enforce_student_booking_minimum_notice"() OWNER TO "postgres";
+
+CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+begin
+  insert into public.profiles (id, email, full_name, role, date_of_birth)
+  values (
+    new.id,
+    coalesce(new.email, ''),
+    coalesce(new.raw_user_meta_data->>'full_name', ''),
+    coalesce(new.raw_user_meta_data->>'role', 'student'),
+    nullif(new.raw_user_meta_data->>'date_of_birth', '')::date
+  )
+  on conflict (id) do nothing;
+
+  return new;
+end;
+$$;
+
+ALTER FUNCTION "public"."handle_new_user"() OWNER TO "postgres";
+
+CREATE OR REPLACE FUNCTION "public"."set_updated_at"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+ALTER FUNCTION "public"."set_updated_at"() OWNER TO "postgres";
 
 -- TABLES
 
@@ -136,6 +201,14 @@ CREATE TABLE IF NOT EXISTS "public"."homework_analytics" (
     "updated_at" timestamp with time zone DEFAULT "now"()
 );
 ALTER TABLE "public"."homework_analytics" OWNER TO "postgres";
+
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS trigger AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
 CREATE TABLE IF NOT EXISTS "public"."homework_assignments" (
     "id" "uuid" DEFAULT "extensions"."uuid_generate_v4"() NOT NULL PRIMARY KEY,
@@ -644,38 +717,7 @@ begin
 end;
 $$;
 
-ALTER FUNCTION "public"."enforce_student_booking_minimum_notice"() OWNER TO "postgres";
 
-CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO 'public'
-    AS $$
-begin
-  insert into public.profiles (id, email, full_name, role, date_of_birth)
-  values (
-    new.id,
-    coalesce(new.email, ''),
-    coalesce(new.raw_user_meta_data->>'full_name', ''),
-    coalesce(new.raw_user_meta_data->>'role', 'student'),
-    nullif(new.raw_user_meta_data->>'date_of_birth', '')::date
-  )
-  on conflict (id) do nothing;
-
-  return new;
-end;
-$$;
-
-ALTER FUNCTION "public"."handle_new_user"() OWNER TO "postgres";
-
-CREATE OR REPLACE FUNCTION "public"."set_updated_at"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    AS $$
-begin
-  new.updated_at = now();
-  return new;
-end;
-$$;
-ALTER FUNCTION "public"."set_updated_at"() OWNER TO "postgres";
 
 CREATE POLICY "Anyone can view active availability" ON "public"."tutor_availability" FOR SELECT TO "authenticated", "anon" USING (is_active = true AND is_available = true);
 CREATE POLICY "Enable read access for all users" ON "public"."system_settings" FOR SELECT USING (true);
