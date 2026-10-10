@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { cancelBooking, ensureBookingVideoRoom, getTutorBookings, markBookingPaidByCash, subscribeToTutorBookings, updateBookingStatus } from '../../lib/bookingAPI'
-import { buildVideoRoomUrl } from '../../lib/videoRoomAPI'
+import { cancelBooking, getTutorBookings, markBookingPaidByCash, subscribeToTutorBookings, updateBookingStatus } from '../../lib/bookingAPI'
 import { recordBookingPayment } from '../../lib/paymentsAPI'
 
 function parseLessonDate(lessonDate) {
@@ -85,33 +84,6 @@ export default function BookingManagement({ tutorId }) {
     if (status === 'tba') return 'To be arranged'
     return status
   }
-  const copyRoomLink = useCallback(async (videoRoomToken) => {
-    const url = buildVideoRoomUrl(videoRoomToken)
-    if (!url) return
-
-    try {
-      await navigator.clipboard.writeText(url)
-      window.alert('Video room link copied.')
-    } catch (err) {
-      console.error('Failed to copy video room link', err)
-      window.prompt('Copy this video room link:', url)
-    }
-  }, [])
-
-  const handleGenerateRoom = useCallback(async (bookingId) => {
-    try {
-      const { data, error } = await ensureBookingVideoRoom(bookingId)
-      if (error) throw error
-      await loadBookings()
-      if (data) {
-        setSelectedBooking((prev) => (prev?.id === bookingId ? { ...prev, ...data } : prev))
-      }
-      window.alert('Video room generated.')
-    } catch (err) {
-      setError(err.message || 'Failed to generate video room')
-    }
-  }, [loadBookings])
-
   const handleCancelBooking = useCallback(async (bookingId) => {
     if (!window.confirm('Cancel this booking?')) return
     try {
@@ -258,32 +230,6 @@ export default function BookingManagement({ tutorId }) {
           <p>
             <strong>Payment:</strong> {booking.payment_status}
           </p>
-          {booking.video_room_token && (
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-              <a
-                href={buildVideoRoomUrl(booking.video_room_token)}
-                className="btn-secondary"
-                onClick={(e) => e.stopPropagation()}
-              >
-                Join Room
-              </a>
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  copyRoomLink(booking.video_room_token)
-                }}
-              >
-                Copy Link
-              </button>
-            </div>
-          )}
-          {booking.video_room_passcode && (
-            <p>
-              <strong>Passcode:</strong> {booking.video_room_passcode}
-            </p>
-          )}
         </div>
       ))}
     </div>
@@ -361,22 +307,6 @@ export default function BookingManagement({ tutorId }) {
                 <strong>Price:</strong> £{Number(selectedBooking.lesson_price).toFixed(2)}
               </p>
             )}
-            {selectedBooking.video_room_token && (
-              <p>
-                <strong>Room Link:</strong>{' '}
-                <a href={buildVideoRoomUrl(selectedBooking.video_room_token)}>
-                  {buildVideoRoomUrl(selectedBooking.video_room_token)}
-                </a>
-              </p>
-            )}
-            {selectedBooking.video_room_passcode && (
-              <p>
-                <strong>Passcode:</strong> {selectedBooking.video_room_passcode}
-              </p>
-            )}
-            <p>
-              <strong>Lobby Enabled:</strong> {selectedBooking.video_room_lobby_enabled ? 'Yes' : 'No'}
-            </p>
 
             <div className="modal-actions">
               {selectedBooking.status === 'pending' && (
@@ -411,23 +341,6 @@ export default function BookingManagement({ tutorId }) {
                   className="btn-danger"
                 >
                   Cancel Booking
-                </button>
-              )}
-              <button
-                onClick={() => {
-                  window.open(buildVideoRoomUrl(selectedBooking.video_room_token), '_blank')
-                }}
-                className="btn-secondary"
-                disabled={!selectedBooking.video_room_token}
-              >
-                Join Video Room
-              </button>
-              {!selectedBooking.video_room_token && (
-                <button
-                  onClick={() => handleGenerateRoom(selectedBooking.id)}
-                  className="btn-secondary"
-                >
-                  Generate Video Room
                 </button>
               )}
               <button

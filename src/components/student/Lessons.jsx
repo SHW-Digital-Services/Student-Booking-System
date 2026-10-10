@@ -4,7 +4,6 @@ import { supabase } from '../../lib/supabaseClient'
 import HomeworkSubmission from './HomeworkSubmission'
 import { getLessonActivities } from '../../lib/lessonsAPI'
 import { getLessonHomework } from '../../lib/homeworkAPI'
-import { buildVideoRoomUrl } from '../../lib/videoRoomAPI'
 
 export default function Lessons({ studentId }) {
   const { user } = useAuth()
@@ -12,40 +11,7 @@ export default function Lessons({ studentId }) {
   const [selectedLesson, setSelectedLesson] = useState(null)
   const [activities, setActivities] = useState([])
   const [homework, setHomework] = useState([])
-  const [bookingRooms, setBookingRooms] = useState({})
   const [loading, setLoading] = useState(true)
-
-  const loadBookingRooms = useCallback(async (lessonRows) => {
-    const bookingIds = lessonRows
-      .map((lesson) => lesson.booking_id)
-      .filter(Boolean)
-
-    if (bookingIds.length === 0) {
-      setBookingRooms({})
-      return
-    }
-
-    const { data, error } = await supabase
-      .from('bookings')
-      .select('id, video_room_token, video_room_passcode')
-      .in('id', bookingIds)
-
-    if (error) {
-      console.error('Error loading booking room links:', error)
-      return
-    }
-
-    const roomMap = {}
-    for (const booking of data || []) {
-      if (booking.video_room_token) {
-        roomMap[booking.id] = {
-          token: booking.video_room_token,
-          passcode: booking.video_room_passcode
-        }
-      }
-    }
-    setBookingRooms(roomMap)
-  }, [])
 
   const loadLessons = useCallback(async () => {
     try {
@@ -57,13 +23,12 @@ export default function Lessons({ studentId }) {
 
       if (error) throw error
       setLessons(data || [])
-      await loadBookingRooms(data || [])
     } catch (error) {
       console.error('Error loading lessons:', error)
     } finally {
       setLoading(false)
     }
-  }, [loadBookingRooms, studentId, user?.id])
+  }, [studentId, user?.id])
 
   useEffect(() => {
     if (!(studentId || user?.id)) return
@@ -124,15 +89,6 @@ export default function Lessons({ studentId }) {
                 <p><strong>Date:</strong> {new Date(lesson.lesson_date).toLocaleDateString()}</p>
                 <p><strong>Time:</strong> {lesson.lesson_time.slice(0, 5)}</p>
                 <p><strong>Duration:</strong> {lesson.duration_minutes} minutes</p>
-                {lesson.booking_id && bookingRooms[lesson.booking_id]?.token && (
-                  <p>
-                    <strong>Video Room:</strong>{' '}
-                    <a href={buildVideoRoomUrl(bookingRooms[lesson.booking_id].token)}>
-                      Join now
-                    </a>
-                    {bookingRooms[lesson.booking_id]?.passcode ? ` (Passcode: ${bookingRooms[lesson.booking_id].passcode})` : ''}
-                  </p>
-                )}
               </div>
 
               {selectedLesson === lesson.id && (

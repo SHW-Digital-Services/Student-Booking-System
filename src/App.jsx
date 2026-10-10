@@ -10,8 +10,6 @@ import TutorDashboard from './components/tutor/TutorDashboard'
 import TutorSelection from './components/student/TutorSelection'
 import BookingForm from './components/student/BookingForm'
 import Policies from './pages/Policies' //
-import VideoRoom from './components/VideoRoom/VideoRoom'
-import VideoRoomPage from './pages/VideoRoomPage'
 import PaymentPage from './pages/PaymentPage'
 import MaintenancePage from './pages/Maintenance'
 import { getSystemSetting } from './lib/settingsAPI'
@@ -169,11 +167,9 @@ function AppRoutes() {
       <Route path="/student/tutors" element={<ProtectedRoute allowedRole="student" maintenanceMode={maintenanceMode}><TutorSelection /></ProtectedRoute>} />
       <Route path="/student/book/:tutorId" element={<ProtectedRoute allowedRole="student" maintenanceMode={maintenanceMode}><BookingForm /></ProtectedRoute>} />
       <Route path="/payment/:bookingId" element={<ProtectedRoute maintenanceMode={maintenanceMode}><PaymentPage /></ProtectedRoute>} />
-      <Route path="/video/:roomToken" element={<ProtectedRoute maintenanceMode={maintenanceMode}><VideoRoomPage /></ProtectedRoute>} />
       
       <Route path="/tutor" element={<ProtectedRoute allowedRole="tutor" maintenanceMode={maintenanceMode}><TutorDashboard /></ProtectedRoute>} />
 
-      <Route path="/video-room/:meetingId" element={<VideoRoom />} />
       <Route path="*" element={<Navigate to="/" />} />   
        </Routes>
  

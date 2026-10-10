@@ -7,7 +7,7 @@ const SUPPORT_EMAIL = 'scott@scott-hw.online'
 
 const studentGuides = [
   ['Book a lesson', 'Open Book a Lesson, choose a tutor and time that suits you, then complete payment to confirm it.'],
-  ['Join your lesson', 'Open My Lessons shortly before the scheduled time and use the video-room link shown for the lesson.'],
+  ['Join your lesson', 'Check your lesson arrangements and contact your tutor if you need help joining.'],
   ['Submit homework', 'Choose Homework, select the relevant lesson, attach your work and submit it for tutor review.'],
   ['Manage your account', 'Use My Profile to keep your details up to date and Payments to view payment information.'],
 ]
@@ -15,7 +15,7 @@ const studentGuides = [
 const tutorGuides = [
   ['Manage bookings', 'Use Bookings to review upcoming requests and keep lesson arrangements up to date.'],
   ['Set availability', 'Add your regular teaching hours and block dates or times when you are unavailable.'],
-  ['Run lessons', 'Use Lessons to prepare lesson notes and open the video room when it is time to teach.'],
+  ['Run lessons', 'Use Lessons to prepare lesson notes and check your lesson arrangements before teaching.'],
   ['Review student work', 'Open Homework Submissions to download work, give feedback and mark completed submissions.'],
 ]
 

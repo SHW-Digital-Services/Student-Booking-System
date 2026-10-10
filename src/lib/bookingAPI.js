@@ -87,72 +87,10 @@ export function subscribeToTutorBookings(tutorId, onChange) {
   }
 }
 
-function generateHexToken(length = 24) {
-  const bytes = new Uint8Array(Math.ceil(length / 2))
-  crypto.getRandomValues(bytes)
-  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
-  return hex.slice(0, length)
-}
-
-function generateSixDigitPasscode() {
-  return String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0')
-}
-
-function isMissingVideoRoomColumnError(error) {
-  const message = String(error?.message || '')
-  return (
-    message.includes('video_room_token') ||
-    message.includes('video_room_passcode')
-  )
-}
-
 function normalizeBookingPrice(value) {
   const price = Number(value)
   if (!Number.isFinite(price) || price < 0) return null
   return Number(price.toFixed(2))
-}
-
-export async function ensureBookingVideoRoom(bookingId) {
-  try {
-    if (!bookingId) throw new Error('Booking ID is required')
-
-    const { data: booking, error: bookingError } = await supabase
-      .from('bookings')
-      .select('id, video_room_token, video_room_passcode')
-      .eq('id', bookingId)
-      .single()
-
-    if (bookingError) throw bookingError
-
-    if (booking?.video_room_token) {
-      return { data: booking, error: null }
-    }
-
-    const token = generateHexToken(24)
-    const passcode = booking?.video_room_passcode || generateSixDigitPasscode()
-    const { data, error } = await supabase
-      .from('bookings')
-      .update({
-        video_room_token: token,
-        video_room_passcode: passcode,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', bookingId)
-      .select()
-      .single()
-
-    if (error) throw error
-    return { data, error: null }
-  } catch (error) {
-    if (isMissingVideoRoomColumnError(error)) {
-      return {
-        data: null,
-        error: new Error('Video room columns are missing in Supabase. Run the latest migrations first.')
-      }
-    }
-    console.error('Error ensuring booking video room:', error)
-    return { data: null, error }
-  }
 }
 
 // Create a new booking
