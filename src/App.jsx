@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { AuthProvider, useAuth } from './contexts/auth'
+import { Analytics } from '@vercel/analytics/react'
 import Home from './components/Home'
 import Login from './components/auth/Login'
 import Register from './components/auth/Register'
@@ -185,6 +186,7 @@ function App() {
     <Router>
       <AuthProvider>
         <AppRoutes />
+        <Analytics />
       </AuthProvider>
     </Router>
   )
