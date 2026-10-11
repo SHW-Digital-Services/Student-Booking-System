@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../contexts/auth'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { supabase } from '../../lib/supabaseClient'
 import { 
   User, 
   CalendarPlus, 
@@ -58,56 +57,14 @@ export default function StudentDashboard({ previewStudentId = null, previewStude
     const searchParams = new URLSearchParams(location.search)
     const paymentFlag = searchParams.get('payment')
     const bookingId = searchParams.get('booking_id')
-    const sessionId = searchParams.get('session_id')
+    if (paymentFlag !== 'success' || !bookingId) return
 
-    if (paymentFlag !== 'success' || !bookingId || !sessionId) return
-
-    let cancelled = false
-
-    const reconcilePayment = async () => {
-      try {
-        setPaymentSyncError('')
-        setPaymentSyncMessage('Checking Stripe payment...')
-
-        const { data: sessionData } = await supabase.auth.getSession()
-        const accessToken = sessionData?.session?.access_token
-
-        const { data, error } = await supabase.functions.invoke('stripe-reconcile', {
-          body: {
-            bookingId,
-            sessionId,
-          },
-          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
-        })
-
-        if (error) {
-          throw new Error(error.message || 'Failed to sync Stripe payment')
-        }
-
-        if (cancelled) return
-
-        if (data?.ok) {
-          setPaymentSyncMessage('Payment synced from Stripe.')
-          const nextParams = new URLSearchParams(location.search)
-          nextParams.delete('payment')
-          nextParams.delete('booking_id')
-          nextParams.delete('session_id')
-          navigate({ pathname: location.pathname, search: nextParams.toString() ? `?${nextParams.toString()}` : '' }, { replace: true })
-        } else {
-          throw new Error('Stripe payment could not be synced.')
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setPaymentSyncError(err.message || 'Failed to sync Stripe payment')
-        }
-      }
-    }
-
-    reconcilePayment()
-
-    return () => {
-      cancelled = true
-    }
+    setPaymentSyncError('')
+    setPaymentSyncMessage('PayPal payment confirmed. Your booking is confirmed.')
+    const nextParams = new URLSearchParams(location.search)
+    nextParams.delete('payment')
+    nextParams.delete('booking_id')
+    navigate({ pathname: location.pathname, search: nextParams.toString() ? `?${nextParams.toString()}` : '' }, { replace: true })
   }, [location.pathname, location.search, navigate, previewMode, user?.id])
 
   return (

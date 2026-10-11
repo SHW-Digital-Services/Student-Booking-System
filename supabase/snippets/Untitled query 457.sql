@@ -105,7 +105,7 @@ create table if not exists public.payments (
   student_id uuid not null references public.profiles(id) on delete cascade,
   amount numeric(10,2) not null check (amount >= 0),
   currency text not null default 'GBP',
-  payment_method text not null default 'stripe',
+  payment_method text not null default 'paypal',
   transaction_reference text null,
   order_reference text null,
   status text not null default 'completed' check (status in ('pending', 'completed', 'failed', 'refunded')),

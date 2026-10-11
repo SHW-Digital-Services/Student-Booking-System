@@ -1,14 +1,11 @@
 import { useEffect, useState, useCallback } from 'react'
 import { getStudentPayments, PAYMENT_UPDATE_EVENT, PAYMENT_UPDATE_STORAGE_KEY, subscribeToStudentPayments } from '../../lib/paymentsAPI'
-import { CreditCard, AlertCircle } from 'lucide-react'
-import { supabase } from '../../lib/supabaseClient'
+import { CreditCard } from 'lucide-react'
 
 export default function StudentPayments({ studentId }) {
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [portalLoading, setPortalLoading] = useState(false)
-  const [portalError, setPortalError] = useState(null)
 
   const loadPayments = useCallback(async () => {
     try {
@@ -83,37 +80,6 @@ export default function StudentPayments({ studentId }) {
     .filter((p) => p.status === 'completed')
     .reduce((sum, p) => sum + Number(p.amount), 0)
 
-  const openCustomerPortal = async () => {
-    try {
-      setPortalLoading(true)
-      setPortalError(null)
-      const { data: sessionData } = await supabase.auth.getSession()
-      const accessToken = sessionData?.session?.access_token
-
-      const { data, error: portalErrorResponse } = await supabase.functions.invoke(
-        'stripe-portal',
-        {
-          body: { studentId },
-          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
-        },
-      )
-
-      if (portalErrorResponse) {
-        throw new Error(portalErrorResponse.message || 'Failed to open Stripe customer portal')
-      }
-
-      if (!data?.portal_url) {
-        throw new Error('Stripe customer portal URL was not returned')
-      }
-
-      window.open(data.portal_url, '_blank', 'noopener,noreferrer')
-    } catch (err) {
-      setPortalError(err.message || 'Failed to open Stripe customer portal')
-    } finally {
-      setPortalLoading(false)
-    }
-  }
-
   return (
     <div className="payments-container">
       <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
@@ -126,22 +92,10 @@ export default function StudentPayments({ studentId }) {
             £{totalPaid.toFixed(2)}
           </p>
         </div>
-        <div style={{ marginLeft: 'auto' }}>
-          <button
-            type="button"
-            onClick={openCustomerPortal}
-            disabled={portalLoading}
-            className="btn-primary"
-            style={{ minWidth: '220px' }}
-          >
-            {portalLoading ? 'Opening portal...' : 'Manage billing in Stripe'}
-          </button>
-        </div>
       </div>
 
       <div className="card">
         <h3>Payment History</h3>
-        {portalError && <div className="error-message"><AlertCircle size={16} /> {portalError}</div>}
         {error && <div className="error-message"><AlertCircle size={16} /> {error}</div>}
 
         {loading ? (

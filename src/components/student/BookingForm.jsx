@@ -9,8 +9,7 @@ import {
 import { getTutorAvailability } from "../../lib/availabilityAPI";
 import { getTutorHourlyRate, getProfile } from "../../lib/profileAPI";
 import { getTutorSubjects } from "../../lib/tutorSubjectsAPI";
-import { supabase } from "../../lib/supabaseClient";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 function formatDateForInput(date) {
   const year = date.getFullYear();
@@ -28,6 +27,7 @@ function formatBookingDeadline(date) {
 
 function BookingForm() {
   const { tutorId } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
 
   const [selectedDate, setSelectedDate] = useState("");
@@ -193,27 +193,7 @@ function BookingForm() {
 
       if (bookingError) throw bookingError;
 
-      const { data, error: paymentError } = await supabase.functions.invoke(
-        "stripe-init",
-        {
-          body: {
-            amount: lessonPrice,
-            bookingId: booking.id,
-            studentId: user.id,
-            email: user.email,
-          },
-        },
-      );
-
-      if (paymentError) {
-        throw new Error(paymentError.message || "Failed to initialize Stripe checkout");
-      }
-
-      if (!data?.checkout_url) {
-        throw new Error("Failed to initialize Stripe checkout");
-      }
-
-      window.location.href = data.checkout_url;
+      navigate(`/payment/${booking.id}`);
     } catch (err) {
       setError(err.message);
       setLoading(false);
@@ -293,7 +273,7 @@ function BookingForm() {
           disabled={loading || !selectedTime || !selectedDate || (lessonSubjects.length > 0 && !selectedSubject)}
           className="btn-primary"
         >
-          {loading ? "Redirecting..." : "Continue to Stripe checkout"}
+          {loading ? "Preparing..." : "Continue to PayPal checkout"}
         </button>
       </form>
 

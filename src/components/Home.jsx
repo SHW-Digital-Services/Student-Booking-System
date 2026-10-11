@@ -222,7 +222,7 @@ export default function Home() {
           >
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💳</div>
             <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Secure Payments</h3>
-            <p style={{ color: '#a0a0a0' }}>Pay safely with Stripe-powered checkout</p>
+            <p style={{ color: '#a0a0a0' }}>Pay safely with PayPal checkout</p>
           </div>
         </div>
       </main>

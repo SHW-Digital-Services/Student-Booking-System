@@ -119,7 +119,7 @@ export async function createPayment(paymentData) {
       tutor_id: tutorId,
       amount: paymentData.amount,
       currency: paymentData.currency || 'GBP',
-      payment_method: paymentData.paymentMethod || 'stripe',
+      payment_method: paymentData.paymentMethod || 'paypal',
       transaction_reference: paymentData.transactionReference,
       status: paymentData.status || 'completed',
       payment_date: paymentData.paymentDate || new Date().toISOString()
@@ -204,7 +204,7 @@ export async function recordPayment(bookingId, studentId, amount, paymentReferen
         tutor_id: tutorId,
         amount: amount,
         currency: 'GBP',
-        payment_method: 'stripe',
+        payment_method: 'paypal',
         transaction_reference: paymentReference,
         status: 'completed',
         payment_date: new Date().toISOString()

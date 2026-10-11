@@ -121,7 +121,7 @@ function FAQSection() {
         To book a lesson, log in to your student dashboard, browse our list of qualified tutors, select a tutor's profile, and choose an available time slot from their calendar.
       </Accordion>
       <Accordion question="How do payments work?">
-        Payments are processed securely through Stripe at the time of booking. You pay when you reserve the lesson, and the booking is confirmed once the payment succeeds.
+        Payments are processed securely through PayPal at the time of booking. You pay when you reserve the lesson, and the booking is confirmed once PayPal confirms the payment.
       </Accordion>
       <Accordion question="Can I cancel a lesson?">
         Yes, you can cancel a lesson up to 24 hours before the scheduled start time for a full refund. Cancellations made within 24 hours may be subject to a cancellation fee at the tutor's discretion.
@@ -158,7 +158,7 @@ function PrivacyPolicy() {
       <ul style={{ paddingLeft: '1.5rem', marginBottom: '1rem' }}>
         <li><strong>Identity Data:</strong> Name, date of birth, profile pictures.</li>
         <li><strong>Contact Data:</strong> Email address, phone number, billing address.</li>
-        <li><strong>Financial Data:</strong> Payment details (processed securely via Stripe and other necessary payment infrastructure providers).</li>
+        <li><strong>Financial Data:</strong> Payment details (processed securely by PayPal and other necessary payment infrastructure providers).</li>
         <li><strong>Usage Data:</strong> Information about how you use our website and services.</li>
       </ul>
 

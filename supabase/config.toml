@@ -389,29 +389,15 @@ verify_jwt = false
 import_map = "./functions/notify-booking/deno.json"
 entrypoint = "./functions/notify-booking/index.ts"
 
-[functions.stripe-init]
+[functions.paypal-create-order]
 enabled = true
-verify_jwt = false
-import_map = "./functions/stripe-init/deno.json"
-entrypoint = "./functions/stripe-init/index.ts"
+verify_jwt = true
+entrypoint = "./functions/paypal-create-order/index.ts"
 
-[functions.stripe-webhook]
+[functions.paypal-capture-order]
 enabled = true
-verify_jwt = false
-import_map = "./functions/stripe-webhook/deno.json"
-entrypoint = "./functions/stripe-webhook/index.ts"
-
-[functions.stripe-reconcile]
-enabled = true
-verify_jwt = false
-import_map = "./functions/stripe-reconcile/deno.json"
-entrypoint = "./functions/stripe-reconcile/index.ts"
-
-[functions.stripe-portal]
-enabled = true
-verify_jwt = false
-import_map = "./functions/stripe-portal/deno.json"
-entrypoint = "./functions/stripe-portal/index.ts"
+verify_jwt = true
+entrypoint = "./functions/paypal-capture-order/index.ts"
 
 [functions.tutor-reset-password]
 enabled = true

@@ -14,25 +14,26 @@ Tutor email
 Required environment variables
 - `VITE_SUPABASE_URL` - public Supabase URL for the frontend
 - `VITE_SUPABASE_ANON_KEY` - public anon key for Supabase (frontend)
-- `VITE_STRIPE_PUBLIC_KEY` - Stripe publishable key for the frontend
+- `VITE_PAYPAL_CLIENT_ID` - PayPal app client ID used to load PayPal checkout in the frontend
 
-Server-side required env vars
-- `STRIPE_SECRET_KEY` - Stripe secret key (server)
-- `STRIPE_WEBHOOK_SECRET` - Stripe webhook signing secret (for webhooks)
-- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (server-only, used by server routes to write records)
-- `SUPABASE_ANON_KEY` - Supabase anon key used by edge functions to identify the current user
-- `FRONTEND_URL` - Base URL used for Stripe success and cancel redirects
-- `SUPABASE_URL` - Supabase URL used by the Stripe webhook function
+Supabase Edge Function secrets
+- `PAYPAL_CLIENT_ID` - PayPal app client ID (same public ID as `VITE_PAYPAL_CLIENT_ID`)
+- `PAYPAL_CLIENT_SECRET` - PayPal app secret; keep this server-side
+- `PAYPAL_ENVIRONMENT` - `sandbox` while testing, then `live` for real payments
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (server-only)
+- `SUPABASE_ANON_KEY` - Supabase anon key used by Edge Functions to identify the signed-in user
+- `SUPABASE_URL` - Supabase URL (provided by Supabase in hosted Edge Functions)
 
 Notes
-- Student checkout is handled by `supabase/functions/stripe-init/index.ts`.
-- Stripe webhook processing is handled by `supabase/functions/stripe-webhook/index.ts`.
-- Stripe customer portal links are handled by `supabase/functions/stripe-portal/index.ts`.
-- The webhook updates `bookings` and inserts `payments` rows after a successful checkout session.
+- Student checkout orders are created by `supabase/functions/paypal-create-order/index.ts`.
+- Approved orders are captured and verified by `supabase/functions/paypal-capture-order/index.ts`.
+- The capture function checks the booking owner, order reference, currency, and amount with PayPal before it updates `bookings` and `payments`.
+- PayPal uses the existing `paypal_order_id` and `paypal_transaction_id` columns in `payments`.
 
 Deploy checklist
-- Provide the server env vars in your hosting provider (Vercel, Azure, etc.).
-- Ensure RLS policies on Supabase allow the server (service role) to write `payments` and update `bookings`.
-- Configure the Stripe webhook endpoint and protect it with the Stripe signing secret.
-- For the live webhook endpoint, make sure the Supabase Edge Function has the live `STRIPE_WEBHOOK_SECRET` and `SUPABASE_SERVICE_ROLE_KEY` configured in its secrets, then redeploy `stripe-webhook`.
-- Run end-to-end tests for booking → payment → booking status update.
+- Set `VITE_PAYPAL_CLIENT_ID` in the frontend hosting environment.
+- Add the PayPal credentials and Supabase keys as Supabase Edge Function secrets; never put `PAYPAL_CLIENT_SECRET` or the service role key in a `VITE_*` variable.
+- In PayPal Developer Dashboard, use sandbox app credentials for testing and live app credentials for production.
+- Deploy `paypal-create-order` and `paypal-capture-order` to the same Supabase project used by the frontend.
+- Confirm the PayPal app client ID matches `VITE_PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_ID`, and that `PAYPAL_ENVIRONMENT` matches the selected app environment.
+- Complete a sandbox booking and verify PayPal shows a completed capture and Supabase records the PayPal order/transaction and marks the booking paid.

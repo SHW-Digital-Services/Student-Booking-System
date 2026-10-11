@@ -278,7 +278,7 @@ me.book_tutor("Python")`}</pre>
               <div className="step-number">03</div>
               <div className="step-content">
                 <h3>Book & Pay Securely</h3>
-                <p>Select a time slot that works for you and pay securely with Stripe.</p>
+                <p>Select a time slot that works for you and pay securely with PayPal.</p>
               </div>
             </div>
 
