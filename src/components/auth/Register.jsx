@@ -82,6 +82,7 @@ export default function Register() {
               <input
                 type="text"
                 name="fullName"
+                autoComplete="name"
                 placeholder="John Doe"
                 value={formData.fullName}
                 onChange={handleChange}
@@ -97,6 +98,7 @@ export default function Register() {
               <input
                 type="email"
                 name="email"
+                autoComplete="email"
                 placeholder="john@example.com"
                 value={formData.email}
                 onChange={handleChange}
@@ -112,6 +114,7 @@ export default function Register() {
               <input
                 type="password"
                 name="password"
+                autoComplete="new-password"
                 placeholder="Create a password"
                 value={formData.password}
                 onChange={handleChange}
@@ -127,6 +130,7 @@ export default function Register() {
               <input
                 type="date"
                 name="dateOfBirth"
+                autoComplete="bday"
                 value={formData.dateOfBirth}
                 onChange={handleChange}
               />
