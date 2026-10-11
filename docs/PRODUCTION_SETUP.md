@@ -14,15 +14,14 @@ Tutor email
 Required environment variables
 - `VITE_SUPABASE_URL` - public Supabase URL for the frontend
 - `VITE_SUPABASE_ANON_KEY` - public anon key for Supabase (frontend)
-- `VITE_PAYPAL_CLIENT_ID` - PayPal app client ID used to load PayPal checkout in the frontend
+- `VITE_PAYPAL_CLIENT_ID` - PayPal app client ID used to load PayPal checkout in the frontend; set as a Vercel **Config** variable because the browser must receive it
 
 Supabase Edge Function secrets
 - `PAYPAL_CLIENT_ID` - PayPal app client ID (same public ID as `VITE_PAYPAL_CLIENT_ID`)
 - `PAYPAL_CLIENT_SECRET` - PayPal app secret; keep this server-side
 - `PAYPAL_ENVIRONMENT` - `sandbox` while testing, then `live` for real payments
-- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (server-only)
-- `SUPABASE_ANON_KEY` - Supabase anon key used by Edge Functions to identify the signed-in user
-- `SUPABASE_URL` - Supabase URL (provided by Supabase in hosted Edge Functions)
+
+Supabase injects `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` into hosted Edge Functions. Do not add them as custom secrets; Supabase reserves names beginning with `SUPABASE_`.
 
 Notes
 - Student checkout orders are created by `supabase/functions/paypal-create-order/index.ts`.
@@ -31,8 +30,8 @@ Notes
 - PayPal uses the existing `paypal_order_id` and `paypal_transaction_id` columns in `payments`.
 
 Deploy checklist
-- Set `VITE_PAYPAL_CLIENT_ID` in the frontend hosting environment.
-- Add the PayPal credentials and Supabase keys as Supabase Edge Function secrets; never put `PAYPAL_CLIENT_SECRET` or the service role key in a `VITE_*` variable.
+- Set `VITE_PAYPAL_CLIENT_ID` in the frontend hosting environment as a Config variable. This ID is public and required by the browser PayPal SDK.
+- Add only the PayPal credentials as Supabase Edge Function secrets; never put `PAYPAL_CLIENT_SECRET` in a `VITE_*` variable.
 - In PayPal Developer Dashboard, use sandbox app credentials for testing and live app credentials for production.
 - Deploy `paypal-create-order` and `paypal-capture-order` to the same Supabase project used by the frontend.
 - Confirm the PayPal app client ID matches `VITE_PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_ID`, and that `PAYPAL_ENVIRONMENT` matches the selected app environment.
