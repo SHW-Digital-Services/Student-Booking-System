@@ -31,7 +31,7 @@ export default function Register() {
     setError(null)
 
     try {
-      const { user, error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -44,19 +44,8 @@ export default function Register() {
       })
 
       if (signUpError) throw new Error(signUpError.message || 'Sign up failed')
+      const user = data?.user
       if (!user?.id) throw new Error('User creation failed')
-
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: user.id,
-          email: formData.email,
-          full_name: formData.fullName,
-          role: formData.role,
-          date_of_birth: formData.dateOfBirth || null,
-        })
-
-      if (profileError) console.error('Profile upsert error:', profileError)
 
       alert('Registration successful. Please check your email to confirm your account.')
       navigate('/login')
