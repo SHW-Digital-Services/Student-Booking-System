@@ -1,0 +1,192 @@
+.auth-container.register-page {
+  --register-purple: #bb70ff;
+  --register-green: #c4ff58;
+  min-height: 100svh;
+  padding: clamp(1rem, 4vw, 2.5rem);
+  background:
+    radial-gradient(ellipse at 18% 18%, rgba(160, 32, 240, 0.34), transparent 38%),
+    radial-gradient(ellipse at 84% 78%, rgba(180, 255, 57, 0.13), transparent 33%),
+    linear-gradient(145deg, #10051d 0%, #1b0b2c 52%, #0c0815 100%);
+}
+
+.auth-container.register-page > .auth-card.register-card {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 610px);
+  max-width: 610px;
+  padding: clamp(1.5rem, 4vw, 2.75rem);
+  border: 1px solid rgba(235, 214, 255, 0.32);
+  border-radius: 26px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.105), rgba(255, 255, 255, 0.025) 55%),
+    rgba(31, 13, 49, 0.72);
+  box-shadow:
+    0 28px 80px rgba(3, 0, 12, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 0 50px rgba(160, 32, 240, 0.12);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+  animation: register-card-enter 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.auth-container.register-page > .auth-card.register-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(224, 190, 255, 0.48);
+  box-shadow:
+    0 34px 90px rgba(3, 0, 12, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 0 56px rgba(160, 32, 240, 0.16);
+}
+
+.register-card .auth-header {
+  margin-bottom: 1.8rem;
+}
+
+.register-card .auth-header .header-icon {
+  width: 54px;
+  height: 54px;
+  margin: 1.15rem auto 1rem;
+  color: #ead3ff;
+  background: rgba(160, 32, 240, 0.2);
+  border: 1px solid rgba(213, 167, 255, 0.26);
+  box-shadow: 0 0 28px rgba(160, 32, 240, 0.2);
+}
+
+.register-card .auth-header h2 {
+  margin-bottom: 0.35rem;
+  font-size: clamp(1.7rem, 4vw, 2rem);
+  letter-spacing: -0.04em;
+}
+
+.register-card .auth-header p {
+  color: rgba(235, 221, 248, 0.72);
+}
+
+.register-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+  gap: 1.15rem 1rem;
+}
+
+.register-form .input-group {
+  min-width: 0;
+  margin: 0;
+}
+
+.register-form .register-email-field,
+.register-form .register-password-field,
+.register-form .btn-auth {
+  grid-column: 1 / -1;
+}
+
+.register-form .register-birth-field {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.register-form .input-group label {
+  margin-bottom: 0.42rem;
+  color: rgba(248, 241, 255, 0.88);
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.register-form .input-wrapper input {
+  min-height: 3.15rem;
+  padding: 0.82rem 2.8rem 0.82rem 1rem;
+  border: 1px solid rgba(221, 194, 244, 0.22);
+  border-radius: 12px;
+  background: rgba(15, 7, 25, 0.48);
+  color: #fffaff;
+  font: inherit;
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.register-form .input-wrapper input::placeholder {
+  color: rgba(223, 208, 238, 0.46);
+}
+
+.register-form .input-wrapper input:focus {
+  border-color: rgba(196, 255, 88, 0.82);
+  outline: 3px solid rgba(196, 255, 88, 0.15);
+  outline-offset: 1px;
+  background: rgba(15, 7, 25, 0.72);
+  box-shadow: 0 0 22px rgba(160, 32, 240, 0.12);
+}
+
+.register-form .input-wrapper .input-icon {
+  right: 0.95rem;
+  left: auto;
+  color: rgba(196, 255, 88, 0.78);
+}
+
+.register-form .btn-auth {
+  min-height: 3.2rem;
+  margin-top: 0.25rem;
+  border: 1px solid rgba(225, 192, 255, 0.28);
+  border-radius: 12px;
+  background: linear-gradient(110deg, #861be0 0%, #a538ee 62%, #7540d2 100%);
+  box-shadow: 0 10px 24px rgba(119, 26, 187, 0.28);
+}
+
+.register-form .btn-auth:hover:not(:disabled) {
+  filter: brightness(1.1);
+  box-shadow: 0 12px 30px rgba(141, 48, 214, 0.38);
+}
+
+.register-card .auth-footer {
+  margin-top: 1.35rem;
+  padding-top: 1.15rem;
+  border-top-color: rgba(235, 214, 255, 0.12);
+}
+
+.register-card .auth-footer a {
+  color: var(--register-green);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.register-card .auth-footer a:hover {
+  color: #e0ffab;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@keyframes register-card-enter {
+  from { opacity: 0; transform: translateY(12px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 560px) {
+  .auth-container.register-page {
+    align-items: flex-start;
+    padding: 1rem 0.8rem;
+  }
+
+  .auth-container.register-page > .auth-card.register-card {
+    margin-block: auto;
+    border-radius: 20px;
+  }
+
+  .register-form {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .register-form .input-group,
+  .register-form .register-email-field,
+  .register-form .register-password-field,
+  .register-form .btn-auth,
+  .register-form .register-birth-field {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-container.register-page > .auth-card.register-card {
+    animation: none;
+    transition: none;
+  }
+}

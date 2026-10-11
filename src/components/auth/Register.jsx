@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { User, Mail, Lock, Calendar, Loader2, UserPlus, AlertCircle } from 'lucide-react'
 import BrandLogo from '../shared/BrandLogo'
+import './Register.css'
 
 export default function Register() {
   const navigate = useNavigate()
@@ -57,7 +58,7 @@ export default function Register() {
   }
 
   return (
-    <div className="auth-container">
+    <div className="auth-container register-page">
       <div className="auth-card register-card">
         <div className="auth-header">
           <BrandLogo size={52} wordmarkSize={26} />
@@ -69,17 +70,18 @@ export default function Register() {
         </div>
 
         {error && (
-          <div className="auth-error">
+          <div className="auth-error" role="alert">
             <AlertCircle size={18} />
             <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleRegister} className="auth-form">
-          <div className="input-group">
-            <label>Full Name</label>
+        <form onSubmit={handleRegister} className="auth-form register-form">
+          <div className="input-group register-name-field">
+            <label htmlFor="register-full-name">Full Name</label>
             <div className="input-wrapper">
               <input
+                id="register-full-name"
                 type="text"
                 name="fullName"
                 autoComplete="name"
@@ -92,10 +94,11 @@ export default function Register() {
             </div>
           </div>
 
-          <div className="input-group">
-            <label>Email Address</label>
+          <div className="input-group register-email-field">
+            <label htmlFor="register-email">Email Address</label>
             <div className="input-wrapper">
               <input
+                id="register-email"
                 type="email"
                 name="email"
                 autoComplete="email"
@@ -108,10 +111,11 @@ export default function Register() {
             </div>
           </div>
 
-          <div className="input-group">
-            <label>Password</label>
+          <div className="input-group register-password-field">
+            <label htmlFor="register-password">Password</label>
             <div className="input-wrapper">
               <input
+                id="register-password"
                 type="password"
                 name="password"
                 autoComplete="new-password"
@@ -124,10 +128,11 @@ export default function Register() {
             </div>
           </div>
 
-          <div className="input-group">
-            <label>Date of Birth</label>
+          <div className="input-group register-birth-field">
+            <label htmlFor="register-date-of-birth">Date of Birth</label>
             <div className="input-wrapper">
               <input
+                id="register-date-of-birth"
                 type="date"
                 name="dateOfBirth"
                 autoComplete="bday"
