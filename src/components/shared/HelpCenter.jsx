@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BookOpen, CircleHelp, Mail, Send } from 'lucide-react'
+import { BookOpen, CircleHelp, ExternalLink, Mail, PlayCircle, Send } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import './HelpCenter.css'
 
@@ -19,6 +19,17 @@ const tutorGuides = [
   ['Review student work', 'Open Homework Submissions to download work, give feedback and mark completed submissions.'],
 ]
 
+const trainingDemos = {
+  student: [
+    {
+      title: 'How to book a lesson',
+      description: 'Follow a step-by-step walkthrough to find a tutor and book a lesson.',
+      url: 'https://app.supademo.com/demo/cmv3wjezx0mu6qme2jvxq46kz?utm_source=link',
+    },
+  ],
+  tutor: [],
+}
+
 export default function HelpCenter({ role, user, profile }) {
   const [recipient, setRecipient] = useState(null)
   const [recipientError, setRecipientError] = useState('')
@@ -29,6 +40,7 @@ export default function HelpCenter({ role, user, profile }) {
   const [inbox, setInbox] = useState([])
 
   const guides = role === 'student' ? studentGuides : tutorGuides
+  const demos = trainingDemos[role] || []
   const recipientLabel = role === 'student' ? 'your tutor' : SUPPORT_EMAIL
 
   useEffect(() => {
@@ -161,6 +173,33 @@ export default function HelpCenter({ role, user, profile }) {
           </article>
         ))}
       </div>
+
+      <section className="help-training" aria-labelledby="help-training-title">
+        <div className="help-training-heading">
+          <div className="help-training-icon"><PlayCircle size={21} /></div>
+          <div>
+            <h2 id="help-training-title">Training demos</h2>
+            <p>Step-by-step walkthroughs for using your account.</p>
+          </div>
+        </div>
+        {demos.length > 0 ? (
+          <div className="help-training-list">
+            {demos.map(({ title, description, url }) => (
+              <article className="help-training-demo" key={title}>
+                <div className="help-training-demo-copy">
+                  <h3>{title}</h3>
+                  <p>{description}</p>
+                </div>
+                <a href={url} target="_blank" rel="noreferrer" className="help-training-link">
+                  View demo <ExternalLink size={16} aria-hidden="true" />
+                </a>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="help-training-empty">Tutor walkthroughs will be added here.</p>
+        )}
+      </section>
 
       <section className="help-contact">
         <div className="help-contact-heading"><Mail size={22} /><div><h2>Contact {role === 'student' ? 'your tutor' : 'support'}</h2><p>{recipient ? `Your message will be delivered to ${recipient.full_name || recipient.email}.` : 'Finding the right recipient…'}</p></div></div>
